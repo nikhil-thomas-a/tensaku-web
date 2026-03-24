@@ -266,15 +266,9 @@ textarea::placeholder{color:var(--ink5);}
       <span class="temp-val" id="temp-val">4</span>
     </div>
     <div class="ctrl-divider"></div>
-    <div class="ctrl-group">
+    <div class="ctrl-group" id="tone-group">
       <span class="ctrl-label">Tone</span>
-      <div class="tone-pills">
-        <button class="tone-pill active" data-tone="">Default</button>
-        <button class="tone-pill" data-tone="confident">Confident</button>
-        <button class="tone-pill" data-tone="friendly">Friendly</button>
-        <button class="tone-pill" data-tone="concise">Concise</button>
-        <button class="tone-pill" data-tone="academic">Academic</button>
-      </div>
+      <div class="tone-pills" id="tone-pills"></div>
     </div>
   </div>
 
@@ -339,46 +333,168 @@ const LT_URL='https://api.languagetool.org/v2/check';
 const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL='llama-3.3-70b-versatile';
 
+// tones: which tone modifiers make logical sense for this tool
+// tempMax: ceiling for the creativity slider (0.1–N), prevents over-randomness on deterministic tools
 const TOOLS={
-  grammar:{icon:'✓',label:'Grammar Check',desc:'Finds grammar, spelling and style issues',run:'Check Grammar',ai:false},
-  enhance:{icon:'✦',label:'Enhance',desc:'Improves structure, clarity and flow',run:'Enhance',ai:true},
-  elaborate:{icon:'⟿',label:'Elaborate',desc:'Expands short text into fuller professional prose',run:'Elaborate',ai:true},
-  summarise:{icon:'◈',label:'Summarise',desc:'Condenses text to the key points',run:'Summarise',ai:true},
-  bulletify:{icon:'≡',label:'Bulletify',desc:'Converts prose into clean bullet points',run:'Bulletify',ai:true},
-  slackify:{icon:'#',label:'Slackify',desc:'Rewrites for Slack — casual, with emojis',run:'Slackify',ai:true},
-  teamsify:{icon:'⊞',label:'Teamsify',desc:'Rewrites for Teams — professional with emojis',run:'Teamsify',ai:true},
-  formalise:{icon:'◎',label:'Formalise',desc:'Elevates to formal business register',run:'Formalise',ai:true},
-  simplify:{icon:'◇',label:'Simplify',desc:'Rewrites in plain simple English',run:'Simplify',ai:true},
+  grammar: {icon:'✓',label:'Grammar Check',  desc:'Finds grammar, spelling and style issues',           run:'Check Grammar',ai:false,tones:[],           tempMax:0.3},
+  enhance: {icon:'✦',label:'Enhance',         desc:'Improves structure, clarity and flow',               run:'Enhance',       ai:true, tones:['confident','friendly','concise','academic'], tempMax:1.0},
+  elaborate:{icon:'⟿',label:'Elaborate',      desc:'Expands short notes into full professional prose',   run:'Elaborate',     ai:true, tones:['confident','friendly','academic'],            tempMax:1.2},
+  summarise:{icon:'◈',label:'Summarise',       desc:'Condenses text to the essential points',             run:'Summarise',     ai:true, tones:['confident','academic'],                      tempMax:0.5},
+  bulletify:{icon:'≡',label:'Bulletify',       desc:'Converts prose into clean bullet points',            run:'Bulletify',     ai:true, tones:['concise','academic'],                        tempMax:0.6},
+  slackify: {icon:'#',label:'Slackify',        desc:'Rewrites for Slack — casual, scannable, with emoji', run:'Slackify',      ai:true, tones:['friendly','concise'],                        tempMax:1.2},
+  teamsify: {icon:'⊞',label:'Teamsify',        desc:'Rewrites for Teams — professional with emoji',       run:'Teamsify',      ai:true, tones:['confident','concise'],                       tempMax:0.8},
+  formalise:{icon:'◎',label:'Formalise',       desc:'Elevates writing to formal business register',       run:'Formalise',     ai:true, tones:['confident','academic'],                      tempMax:0.6},
+  simplify: {icon:'◇',label:'Simplify',        desc:'Rewrites in plain, simple English',                  run:'Simplify',      ai:true, tones:['friendly','concise'],                        tempMax:0.8},
 };
 
+// ── PRODUCTION PROMPTS ────────────────────────────────────────────────────────
+// Pattern: Role → Task → Explicit rules → Edge-case guards → Output format
 const PROMPTS={
-  enhance:`You are an expert writing editor. Improve the text for clarity, flow and impact. Fix grammar, reduce passive voice, eliminate filler words. Return ONLY the improved text.`,
-  elaborate:`You are a professional writer. Expand this short input into rich, well-structured prose. Add relevant detail, context and professional language. Keep the original meaning. Return ONLY the elaborated text.`,
-  summarise:`Produce a concise summary of the key points in 3-5 sentences. Return ONLY the summary.`,
-  bulletify:`Convert this into clean bullet points starting with •. Each bullet = one clear idea with a strong verb. Return ONLY the bullet points.`,
-  slackify:`Rewrite for Slack: casual, friendly, scannable. Add Slack emojis (:rocket: :fire: :white_check_mark: :+1: :raised_hands: :eyes: :tada: :zap:) naturally. Return ONLY the rewritten message.`,
-  teamsify:`Rewrite for Microsoft Teams: professional but approachable, with line breaks for readability. Add professional emojis (📋 ✅ 📌 🎯 💡 📊 🚀 👍 🙌) where natural. Return ONLY the rewritten message.`,
-  formalise:`Rewrite in formal business English. No contractions, no slang. Professional vocabulary. Suitable for executive communication. Return ONLY the rewritten text.`,
-  simplify:`Rewrite in plain simple English. Short sentences. Simple words. Return ONLY the simplified text.`,
+
+enhance:
+`You are a senior copy editor at a world-class publication. Your task is to improve the text while keeping the author's voice, intent, and all factual content fully intact.
+
+Apply every rule below:
+• Convert passive voice to active voice where it genuinely strengthens the sentence.
+• Remove these filler phrases wherever they appear: "it is worth noting that", "in order to", "the fact that", "basically", "literally", "very", "really", "quite", "somewhat", "due to the fact that".
+• Fix subject-verb agreement, dangling modifiers, and unclear pronoun references.
+• Vary sentence length — mix short punchy sentences with longer ones to create rhythm.
+• Preserve all proper nouns, brand names, numbers, dates, and technical terms exactly as written.
+• Do NOT add any information that is not present in the original.
+• Do NOT over-edit — if a sentence is already good, leave it alone.
+• If the input is fewer than 4 words or is not a recognisable sentence, return it completely unchanged.
+
+Return ONLY the improved text. No explanation, no preamble, no surrounding quotes.`,
+
+elaborate:
+`You are an expert ghostwriter and professional communicator. Your task is to expand the given notes or short text into rich, polished prose that reads as if written by a subject-matter expert.
+
+Apply every rule below:
+• Output must be meaningfully longer than the input — minimum 3× the input word count.
+• Organise with clear topic sentences and logical paragraph-to-paragraph flow.
+• Use specific, concrete language — ban vague filler: "various aspects", "a number of things", "many factors", "it is important to note".
+• Avoid all clichés: "in today's fast-paced world", "at the end of the day", "game-changer", "paradigm shift", "low-hanging fruit", "move the needle".
+• Do NOT invent facts, statistics, names, or claims not present in the input.
+• If input is bullet points, first weave them into coherent prose, then expand naturally.
+• If input is a single sentence, produce at least 3 well-developed paragraphs.
+• If input is already long (200+ words), add depth, examples, and context — not padding.
+
+Return ONLY the elaborated text. No preamble like "Here is the expanded version:".`,
+
+summarise:
+`You are an expert analyst who distils complex information into clear, actionable summaries.
+
+Apply every rule below:
+• Lead with the single most important takeaway as the first sentence.
+• Retain the 3–5 most critical points; cut repetition and tangents entirely.
+• Preserve all specific numbers, names, dates, and figures that are central to meaning.
+• Do NOT add interpretation, opinion, or information not present in the original.
+• Target length: 3–5 sentences, never exceeding 100 words.
+• If input is already under 60 words, respond exactly as: "Already concise. One-sentence version: [sentence]"
+• If input contains action items or a structured list, mirror that structure in the summary.
+• If the input is in a non-English language, summarise in that same language.
+
+Return ONLY the summary. No preamble.`,
+
+bulletify:
+`You are a professional information designer who creates the clearest possible bullet-point structures.
+
+Apply every rule below:
+• Use • as the only bullet character.
+• Each bullet must express exactly ONE idea — split compound sentences into separate bullets.
+• Start each bullet with a strong action verb where natural: Increase, Review, Confirm, Launch, Reduce, Identify, Deliver, etc.
+• Strip all filler — each bullet should be the shortest version that retains full meaning.
+• If content has clear categories, use a short plain-text category header (no bullet), then sub-bullets with  ◦.
+• If input is already bullets, clean and tighten them — do NOT return the input unchanged.
+• Cap at 12 main bullets — group related points if the content warrants more.
+• Preserve all numbers, names, and proper nouns exactly.
+
+Return ONLY the bullet points. No introduction sentence, no closing sentence.`,
+
+slackify:
+`You are a Slack-native communicator who writes internal team messages the way real people do — direct, human, and appropriately casual.
+
+Apply every rule below:
+• Use ACTUAL Unicode emoji characters — for example: 🚀 🔥 ✅ 👀 🙌 ⚡ 🎉 💡 💪 🙏 💯 ⚠️ 😅 👇 📢
+  Do NOT use Slack shortcode format like :rocket: or :fire: — these will not render outside Slack.
+• Add 2–4 emoji maximum, woven naturally into the text — never dump them all at the end.
+• Use line breaks between distinct points to make the message scannable.
+• Replace corporate jargon naturally: "leverage" → "use", "synergise" → "work together", "circle back" → "follow up", "touch base" → "check in".
+• Preserve the seriousness of urgent messages — do not turn critical alerts into jokes.
+• Mark action items by starting that line with ✅.
+• Keep it short — a Slack message should be readable in under 10 seconds.
+• Use natural contractions: we're, it's, don't, can't.
+
+Return ONLY the rewritten Slack message. No preamble.`,
+
+teamsify:
+`You are a seasoned professional who writes Microsoft Teams messages that are clear, appropriately formal, and human — never robotic.
+
+Apply every rule below:
+• Use ACTUAL Unicode emoji characters — for example: 📋 ✅ 📌 🎯 💡 📊 🚀 👍 🙌 ⚠️ 🔍 📣
+• Add 2–3 emoji maximum, placed purposefully to signal structure or importance — not decoration.
+• Use blank lines between paragraphs and sections for visual breathing room.
+• Clearly call out action items with ✅ — include owner and deadline if mentioned in the original.
+• Tone: think "senior colleague on a good day" — professional but not stiff, warm but not casual.
+• Preserve technical terms, product names, and project names exactly as written.
+• If the original is very casual, elevate it slightly; if it is already professional, polish lightly.
+
+Return ONLY the rewritten Teams message. No preamble.`,
+
+formalise:
+`You are a senior executive communications specialist. Your task is to transform informal writing into polished, formal business English.
+
+Apply every rule below:
+• Expand ALL contractions: it's → it is, we're → we are, can't → cannot, won't → will not, I've → I have, they're → they are, you'll → you will.
+  Exception: preserve contractions that appear inside direct quotations exactly as written.
+• Replace informal vocabulary:
+  "get" → "obtain" or "receive" | "show" → "demonstrate" | "use" → "utilise" | "need" → "require" |
+  "talk about" → "discuss" | "find out" → "ascertain" | "set up" → "establish" | "look into" → "investigate" |
+  "deal with" → "address" | "make sure" → "ensure" | "happen" → "occur"
+• Use complete sentences — no fragments, no ellipses (...), no exclamation marks.
+• Preserve all proper nouns, numbers, dates, product names, and technical terms exactly.
+• Do NOT add any content not present in the original.
+• If the input is already formal, make only minimal adjustments and preserve its structure.
+
+Return ONLY the rewritten text. No preamble.`,
+
+simplify:
+`You are a plain-English editor. Your task is to make complex writing accessible to any adult reader without losing accuracy.
+
+Apply every rule below:
+• Target approximately Grade 8 reading level — a 14-year-old should understand every sentence.
+• Replace complex words with simpler equivalents:
+  "utilise" → "use" | "commence" → "start" | "endeavour" → "try" | "ascertain" → "find out" |
+  "necessitate" → "require" | "remuneration" → "pay" | "subsequent" → "next" | "prior to" → "before" |
+  "in the event that" → "if" | "at this point in time" → "now"
+• Break any sentence longer than 25 words into 2 or more shorter sentences.
+• Use active voice — put the subject before the verb.
+• If a technical term MUST be kept, add a plain parenthetical immediately after it: (how plants make food from sunlight).
+• Preserve all important facts, numbers, names, and dates — just express them more plainly.
+• Keep the same format as the original (paragraphs stay paragraphs, lists stay lists).
+• Do NOT oversimplify to the point where accuracy is lost.
+
+Return ONLY the simplified text. No preamble.`,
 };
 
-const TONE_SUFFIX={
-  confident:' Use a confident, assertive tone.',
-  friendly:' Use a warm, friendly tone.',
-  concise:' Be as concise as possible — cut every unnecessary word.',
-  academic:' Use an academic, scholarly tone with precise language.',
+// Tone modifiers — only the tones listed in each tool's `tones` array are shown
+const TONE_DEFS={
+  confident:{label:'Confident', suffix:' Write with authority and conviction. Use declarative sentences. Remove all hedging language: "perhaps", "might", "could potentially", "it seems", "arguably".'},
+  friendly: {label:'Friendly',  suffix:' Use a warm, approachable tone — like writing to a trusted colleague. Short natural sentences. Occasional contractions are fine.'},
+  concise:  {label:'Concise',   suffix:' Be ruthlessly concise. Remove every word that does not add meaning. If something can be said in 5 words, do not use 10.'},
+  academic: {label:'Academic',  suffix:' Adopt a precise, scholarly register. Use Latinate vocabulary, well-structured arguments, and formal syntax. Avoid all colloquialisms.'},
 };
 
 const SAMPLES={
-  grammar:`Their going to the store but they doesnt have no money. Me and him was thinking about it yesterday. The informations is very useful for our works.`,
-  enhance:`The meeting was held by the team. The decision was made to go with the new approach. Things were discussed and changes need to be made soon.`,
-  elaborate:`We need to improve customer onboarding. Current process is slow. Users are confused.`,
-  summarise:`Artificial intelligence is transforming industries worldwide. From healthcare to finance, AI automates tasks, analyses data and detects fraud. While this brings huge efficiency gains, concerns about job displacement, data privacy and algorithmic bias are growing. Experts agree responsible AI development needs strong regulation and transparency.`,
-  bulletify:`In Q3 we saw strong growth in enterprise with revenue up 34% year on year. Customer retention improved to 92%. The new onboarding flow reduced time-to-value by 40%. However churn increased in the SMB segment and support tickets doubled. We need to address pricing and complexity in Q4.`,
-  slackify:`Hi team, the deployment for the new feature has been completed and is now live in production. All tests passed and performance metrics look good. Please let me know if you encounter any issues.`,
-  teamsify:`Hey just wanted to update everyone that we finished the project and it went live. Everything looks good. Let me know if there are problems.`,
-  formalise:`Hey, just wanted to shoot you a quick note about the thing we talked about. I think it could be really cool and we should totally go for it!`,
-  simplify:`The implementation of the aforementioned strategic initiative necessitates the procurement of substantial financial resources and the acquisition of highly specialised human capital with demonstrable expertise in the relevant technological domains.`,
+  grammar:   `Their going to the store but they doesnt have no money. Me and him was thinking about it yesterday. The informations is very useful for our works.`,
+  enhance:   `The meeting was held by the team. The decision was made to go with the new approach. Things were basically discussed and it was decided that changes need to be made very soon by everyone.`,
+  elaborate: `We need to improve customer onboarding. Current process is slow. Users are confused.`,
+  summarise: `Artificial intelligence is transforming industries worldwide. From healthcare to finance, AI automates tasks, analyses data and detects fraud. While this brings huge efficiency gains, concerns about job displacement, data privacy and algorithmic bias are growing. Experts agree responsible AI development needs strong regulation and transparency to ensure it benefits humanity rather than causing harm.`,
+  bulletify: `In Q3 we saw strong growth in the enterprise segment with revenue up 34% year on year. Customer retention improved to 92%. The new onboarding flow reduced time-to-value by 40%. However we struggled in the SMB segment where churn increased and support tickets doubled. We need to address pricing and product complexity in that space going into Q4.`,
+  slackify:  `Dear Team, I would like to inform you that the deployment of the new authentication feature has been completed successfully and is now live in the production environment. All automated test suites have passed and initial performance metrics are within expected parameters. Please do not hesitate to contact me should you encounter any anomalies.`,
+  teamsify:  `Hey so basically I just wanted to let u all know that the thing we were working on is done now and stuff is live. everything seems fine i think. lmk if something breaks lol`,
+  formalise: `Hey, just wanted to shoot you a quick note — we're super excited about the new project and we can't wait to get started! We're gonna need your help to make it work tho, so let's set up a call soon?`,
+  simplify:  `The implementation of the aforementioned strategic initiative necessitates the procurement of substantial financial resources and the acquisition of highly specialised human capital with demonstrable expertise in the relevant technological domains, in order to facilitate the successful execution of the multifaceted operational objectives.`,
 };
 
 // State
@@ -447,19 +563,27 @@ function renderHistoryModal(){
 function timeAgo(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return'just now';if(s<3600)return`${Math.floor(s/60)}m ago`;if(s<86400)return`${Math.floor(s/3600)}h ago`;return`${Math.floor(s/86400)}d ago`;}
 
 // Temperature
-tempSlider.addEventListener('input',()=>{
-  tempVal.textContent=tempSlider.value;
-  const pct=(tempSlider.value-1)/9*100;
-  tempSlider.style.background=`linear-gradient(to right,var(--indigo) ${pct}%,var(--border) ${pct}%)`;
-});
+// Temperature slider handled in helpers section below
 
-// Tone pills
-document.querySelectorAll('.tone-pill').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    activeTone=btn.dataset.tone;
-    document.querySelectorAll('.tone-pill').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-  });
+// Build tone pills dynamically based on which tones the active tool allows
+function buildTonePills(toolKey){
+  activeTone='';
+  const toneGroup=document.getElementById('tone-group');
+  const pillsEl=document.getElementById('tone-pills');
+  const allowed=TOOLS[toolKey].tones||[];
+  if(!allowed.length){toneGroup.style.display='none';return;}
+  toneGroup.style.display='flex';
+  pillsEl.innerHTML=
+    `<button class="tone-pill active" data-tone="">Default</button>`+
+    allowed.map(k=>`<button class="tone-pill" data-tone="${k}">${TONE_DEFS[k].label}</button>`).join('');
+}
+
+// Event delegation on tone pills container
+document.getElementById('tone-pills').addEventListener('click',e=>{
+  const btn=e.target.closest('.tone-pill');if(!btn)return;
+  activeTone=btn.dataset.tone;
+  document.querySelectorAll('.tone-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
 });
 
 // Tool switching
@@ -475,6 +599,11 @@ document.getElementById('tools-row').addEventListener('click',e=>{
   document.getElementById('run-icon').textContent=t.icon;
   document.getElementById('run-label').textContent=t.run;
   document.getElementById('ai-controls').classList.toggle('visible',t.ai);
+  buildTonePills(activeTool);
+  // Reset slider to midpoint when switching tools
+  tempSlider.value=5;tempVal.textContent='5';
+  const pct=4/9*100;
+  tempSlider.style.background=`linear-gradient(to right,var(--indigo) ${pct}%,var(--border) ${pct}%)`;
   updateKeyNotice();
   resultsWrap.classList.remove('visible');
   grammarResult.innerHTML='';aiCard.style.display='none';
@@ -560,12 +689,36 @@ function applyFix(idx,val,card){
   if(ep){if(rem){ep.textContent=`${rem} error${rem>1?'s':''}`;}else ep.style.display='none';}
 }
 
-// AI run
+// AI run — with input validation, per-tool temperature cap, retry on 429
 async function runAI(){
-  const text=inputText.value.trim();if(!text)return;
+  const text=inputText.value.trim();
+  if(!text){showToast('Please enter some text first');return;}
+
+  // Input validation
+  const wordCount=text.split(/\s+/).filter(Boolean).length;
+  if(wordCount<3&&activeTool!=='enhance'){
+    aiCard.style.display='block';
+    aiBody.innerHTML=`<div style="padding:16px 20px;font-size:13px;color:var(--ink3);line-height:1.7">
+      <strong style="color:var(--indigo)">Too short to process.</strong><br>
+      Please enter at least a sentence or two for best results. Short fragments may produce unreliable output.
+    </div>`;
+    resultsWrap.classList.add('visible');grammarResult.innerHTML='';
+    document.getElementById('ai-output-title').textContent=TOOLS[activeTool].label;
+    document.getElementById('ai-output-icon').textContent=TOOLS[activeTool].icon;
+    viewToggle.style.display='none';return;
+  }
+
   const key=getKey();if(!key){openKeyModal();return;}
   const tool=TOOLS[activeTool];
-  const temp=parseFloat(tempSlider.value)/10;
+
+  // Map slider 1-10 to 0.1 → tool.tempMax
+  const sliderFraction=(parseInt(tempSlider.value)-1)/9;
+  const temp=parseFloat((0.1+sliderFraction*(tool.tempMax-0.1)).toFixed(2));
+
+  // Build prompt: base + optional tone suffix
+  const toneSuffix=activeTone&&TONE_DEFS[activeTone]?TONE_DEFS[activeTone].suffix:'';
+  const prompt=PROMPTS[activeTool]+toneSuffix;
+
   lastInput=text;btnRun.disabled=true;
   grammarResult.innerHTML='';aiCard.style.display='block';
   aiBody.innerHTML=`<div class="loading-state"><div class="spinner"></div>Running ${tool.label}…</div>`;
@@ -575,18 +728,37 @@ async function runAI(){
   document.querySelectorAll('.view-tab').forEach(t=>t.classList.toggle('active',t.dataset.view==='output'));
   resultsWrap.classList.add('visible');lastAIText='';
 
-  let prompt=PROMPTS[activeTool]+(activeTone&&TONE_SUFFIX[activeTone]?TONE_SUFFIX[activeTone]:'');
+  const callGroq=async()=>fetch(GROQ_URL,{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+    body:JSON.stringify({model:GROQ_MODEL,max_tokens:1800,temperature:temp,
+      messages:[{role:'system',content:prompt},{role:'user',content:text}]})});
+
   try{
-    const r=await fetch(GROQ_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
-      body:JSON.stringify({model:GROQ_MODEL,max_tokens:1500,temperature:temp,messages:[{role:'system',content:prompt},{role:'user',content:text}]})});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||`Groq error ${r.status}`);}
+    let r=await callGroq();
+    // Retry once on rate limit
+    if(r.status===429){
+      aiBody.innerHTML=`<div class="loading-state"><div class="spinner"></div>Rate limit hit — retrying in 3s…</div>`;
+      await new Promise(res=>setTimeout(res,3000));
+      r=await callGroq();
+    }
+    if(!r.ok){
+      const errData=await r.json().catch(()=>({}));
+      const msg=errData?.error?.message||`Groq API error (${r.status})`;
+      // Provide actionable guidance for common errors
+      const hint=r.status===401?' — check your API key in Settings':r.status===429?' — you have hit your free tier limit, wait a moment and retry':'';
+      throw new Error(msg+hint);
+    }
     const d=await r.json();
     lastAIText=d.choices?.[0]?.message?.content?.trim()||'';
+    if(!lastAIText)throw new Error('Empty response from AI — please try again');
     renderAIOut(lastAIText);
     saveHistory(activeTool,text,lastAIText);
     if(['enhance','formalise','simplify','elaborate'].includes(activeTool))viewToggle.style.display='flex';
-  }catch(e){aiBody.innerHTML=`<div style="color:var(--red);padding:8px;font-size:13px">⚠ ${esc(e.message)}</div>`;}
-  finally{btnRun.disabled=false;}
+  }catch(e){
+    aiBody.innerHTML=`<div style="color:var(--red);padding:16px 20px;font-size:13px;line-height:1.6">
+      <strong>⚠ ${esc(e.message)}</strong>
+    </div>`;
+  }finally{btnRun.disabled=false;}
 }
 
 // View toggle
@@ -637,10 +809,26 @@ function calcScore(w,e){if(!w)return'—';const r=e/w;if(r===0)return 100;if(r<.
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escA(s){return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 let toastT;
-function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove('show'),2200);}
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove('show'),2400);}
+
+// Creativity slider label shows Precise → Balanced → Creative
+function creativityLabel(v){
+  if(v<=3)return'Precise';if(v<=6)return'Balanced';if(v<=8)return'Creative';return'Wild';
+}
+
+// Slider live update
+tempSlider.addEventListener('input',()=>{
+  const v=parseInt(tempSlider.value);
+  tempVal.textContent=creativityLabel(v);
+  const pct=(v-1)/9*100;
+  tempSlider.style.background=`linear-gradient(to right,var(--indigo) ${pct}%,var(--border) ${pct}%)`;
+});
 
 // Init
+buildTonePills('grammar'); // grammar has no tones so it hides the group cleanly
 updateKeyNotice();
+// Set initial slider label
+tempVal.textContent=creativityLabel(parseInt(tempSlider.value));
 </script>
 </body>
 </html>
