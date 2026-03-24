@@ -208,22 +208,48 @@ textarea::placeholder{color:var(--ink5);}
     <span class="nav-romaji">Tensaku</span>
   </div>
   <div class="nav-right">
+    <a class="nav-pill" href="https://nikhil-thomas-a.github.io/portfolio/" target="_blank">← Portfolio</a>
     <button class="nav-pill" id="btn-open-key">⚙ API Key</button>
     <button class="nav-pill" id="btn-history">↺ History</button>
     <a class="nav-pill cta" href="https://console.groq.com/keys" target="_blank">Free Key →</a>
   </div>
 </nav>
 
-<!-- KEY MODAL -->
+<!-- KEY MODAL with step-by-step tour -->
 <div class="modal-overlay" id="key-modal">
-  <div class="modal">
+  <div class="modal" style="width:460px;">
     <h2>Groq API Key</h2>
-    <p>All AI tools use <a href="https://console.groq.com/keys" target="_blank">Groq's free tier</a> — no credit card needed. Your key is stored only in this browser.<br><br>Get yours instantly at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.</p>
+    <p>All AI tools run on <a href="https://console.groq.com/keys" target="_blank">Groq's free tier</a> — no credit card, no limits for personal use. Your key stays in your browser only.</p>
+
+    <!-- Step-by-step tour -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:13px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--indigo);margin-bottom:10px;">How to get your free key</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="min-width:20px;height:20px;border-radius:50%;background:var(--indigo);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
+          <div style="font-size:12px;color:var(--ink2);line-height:1.5;">Go to <a href="https://console.groq.com/keys" target="_blank" style="color:var(--red);text-decoration:none;font-weight:500;">console.groq.com/keys</a> — click <strong>Sign Up</strong> if you don't have an account (takes ~30 seconds, no credit card)</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="min-width:20px;height:20px;border-radius:50%;background:var(--indigo);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
+          <div style="font-size:12px;color:var(--ink2);line-height:1.5;">Once logged in, click <strong>API Keys</strong> in the left sidebar</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="min-width:20px;height:20px;border-radius:50%;background:var(--indigo);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div>
+          <div style="font-size:12px;color:var(--ink2);line-height:1.5;">Click <strong>Create API Key</strong>, give it any name (e.g. "Tensaku"), then click <strong>Submit</strong></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="min-width:20px;height:20px;border-radius:50%;background:var(--indigo);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">4</div>
+          <div style="font-size:12px;color:var(--ink2);line-height:1.5;"><strong>Copy the key</strong> — it starts with <code style="background:var(--indigo-lt);padding:1px 5px;border-radius:3px;font-size:11px;">gsk_</code>. Paste it below. The key is only shown once, so copy it immediately!</div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-row">
       <input type="password" class="modal-input" id="key-input" placeholder="gsk_…"/>
       <button class="modal-save" id="key-save">Save</button>
     </div>
     <div class="modal-status" id="key-status"></div>
+    <div style="font-size:11px;color:var(--ink4);margin-top:8px;">🔒 Your key is stored only in your browser's localStorage — never sent to any server except Groq directly.</div>
     <div class="modal-close-row"><button class="modal-close" id="key-close">Close</button></div>
   </div>
 </div>
@@ -247,15 +273,19 @@ textarea::placeholder{color:var(--ink5);}
 <div class="app-wrap">
 
   <div class="tools-row fade-in d1" id="tools-row">
-    <button class="tool-btn active" data-tool="grammar"><span class="tool-icon">✓</span><span>Grammar Check</span><span class="tool-tag">FREE</span></button>
+    <button class="tool-btn active" data-tool="grammar"><span class="tool-icon">✓</span><span>Grammar Check</span></button>
     <button class="tool-btn" data-tool="enhance"><span class="tool-icon">✦</span><span>Enhance</span></button>
+    <button class="tool-btn" data-tool="paraphrase"><span class="tool-icon">⇄</span><span>Paraphrase</span></button>
     <button class="tool-btn" data-tool="elaborate"><span class="tool-icon">⟿</span><span>Elaborate</span></button>
     <button class="tool-btn" data-tool="summarise"><span class="tool-icon">◈</span><span>Summarise</span></button>
     <button class="tool-btn" data-tool="bulletify"><span class="tool-icon">≡</span><span>Bulletify</span></button>
+    <button class="tool-btn" data-tool="humanise"><span class="tool-icon">♡</span><span>AI Humanise</span></button>
+    <button class="tool-btn" data-tool="translate"><span class="tool-icon">文</span><span>Translate</span></button>
     <button class="tool-btn" data-tool="slackify"><span class="tool-icon">#</span><span>Slackify</span></button>
     <button class="tool-btn" data-tool="teamsify"><span class="tool-icon">⊞</span><span>Teamsify</span></button>
     <button class="tool-btn" data-tool="formalise"><span class="tool-icon">◎</span><span>Formalise</span></button>
     <button class="tool-btn" data-tool="simplify"><span class="tool-icon">◇</span><span>Simplify</span></button>
+    <button class="tool-btn" data-tool="citation"><span class="tool-icon">❞</span><span>Citation</span></button>
   </div>
 
   <!-- AI CONTROLS -->
@@ -263,12 +293,47 @@ textarea::placeholder{color:var(--ink5);}
     <div class="ctrl-group">
       <span class="ctrl-label">Creativity</span>
       <input type="range" class="temp-slider" id="temp-slider" min="1" max="10" value="4" step="1"/>
-      <span class="temp-val" id="temp-val">4</span>
+      <span class="temp-val" id="temp-val">Balanced</span>
     </div>
-    <div class="ctrl-divider"></div>
+    <div class="ctrl-divider" id="ctrl-div-tone"></div>
     <div class="ctrl-group" id="tone-group">
       <span class="ctrl-label">Tone</span>
       <div class="tone-pills" id="tone-pills"></div>
+    </div>
+    <!-- Translate language picker — only visible when translate tool active -->
+    <div class="ctrl-divider" id="ctrl-div-lang" style="display:none;"></div>
+    <div class="ctrl-group" id="lang-group" style="display:none;">
+      <span class="ctrl-label">Translate to</span>
+      <select id="translate-lang" class="modal-input" style="width:auto;padding:4px 8px;font-size:11px;">
+        <option value="Spanish">Spanish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Portuguese">Portuguese</option>
+        <option value="Japanese">Japanese</option>
+        <option value="Chinese (Simplified)">Chinese (Simplified)</option>
+        <option value="Arabic">Arabic</option>
+        <option value="Italian">Italian</option>
+        <option value="Dutch">Dutch</option>
+        <option value="Korean">Korean</option>
+        <option value="Russian">Russian</option>
+        <option value="Swedish">Swedish</option>
+        <option value="Polish">Polish</option>
+        <option value="Turkish">Turkish</option>
+      </select>
+    </div>
+    <!-- Citation format picker — only visible when citation tool active -->
+    <div class="ctrl-divider" id="ctrl-div-cite" style="display:none;"></div>
+    <div class="ctrl-group" id="cite-group" style="display:none;">
+      <span class="ctrl-label">Format</span>
+      <select id="citation-format" class="modal-input" style="width:auto;padding:4px 8px;font-size:11px;">
+        <option value="APA 7th edition">APA 7th</option>
+        <option value="MLA 9th edition">MLA 9th</option>
+        <option value="Chicago 17th edition">Chicago</option>
+        <option value="Harvard">Harvard</option>
+        <option value="IEEE">IEEE</option>
+        <option value="Vancouver">Vancouver</option>
+      </select>
     </div>
   </div>
 
@@ -320,6 +385,7 @@ textarea::placeholder{color:var(--ink5);}
       <div class="output-body" id="ai-output-body"></div>
       <div class="output-footer">
         <span class="word-count-badge" id="output-word-count"></span>
+        <span style="font-size:11px;color:var(--ink4);font-style:italic;">AI can make mistakes — always review before using.</span>
         <button class="btn-sm" id="btn-rerun">↺ Re-run</button>
       </div>
     </div>
@@ -327,6 +393,23 @@ textarea::placeholder{color:var(--ink5);}
 
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer style="background:var(--indigo);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div style="display:flex;align-items:baseline;gap:8px;">
+    <span style="font-family:'Noto Serif JP',serif;font-weight:700;font-size:15px;color:#fff;letter-spacing:1px;">添削</span>
+    <span style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;">Tensaku</span>
+  </div>
+  <div style="font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.8;">
+    Free &amp; open source · Grammar by <a href="https://languagetool.org" target="_blank" style="color:rgba(255,255,255,.7);text-decoration:none;">LanguageTool</a> · AI by <a href="https://groq.com" target="_blank" style="color:rgba(255,255,255,.7);text-decoration:none;">Groq</a> (Llama 3.3 70B)
+  </div>
+  <div>
+    <a href="https://nikhil-thomas-a.github.io/portfolio/" target="_blank"
+       style="font-size:11px;color:rgba(255,255,255,.6);text-decoration:none;border:1px solid rgba(255,255,255,.2);padding:5px 12px;border-radius:99px;transition:all .15s;display:inline-block;">
+      Built by Nikhil Thomas →
+    </a>
+  </div>
+</footer>
 
 <script>
 const LT_URL='https://api.languagetool.org/v2/check';
@@ -336,20 +419,76 @@ const GROQ_MODEL='llama-3.3-70b-versatile';
 // tones: which tone modifiers make logical sense for this tool
 // tempMax: ceiling for the creativity slider (0.1–N), prevents over-randomness on deterministic tools
 const TOOLS={
-  grammar: {icon:'✓',label:'Grammar Check',  desc:'Finds grammar, spelling and style issues',           run:'Check Grammar',ai:false,tones:[],           tempMax:0.3},
-  enhance: {icon:'✦',label:'Enhance',         desc:'Improves structure, clarity and flow',               run:'Enhance',       ai:true, tones:['confident','friendly','concise','academic'], tempMax:1.0},
-  elaborate:{icon:'⟿',label:'Elaborate',      desc:'Expands short notes into full professional prose',   run:'Elaborate',     ai:true, tones:['confident','friendly','academic'],            tempMax:1.2},
-  summarise:{icon:'◈',label:'Summarise',       desc:'Condenses text to the essential points',             run:'Summarise',     ai:true, tones:['confident','academic'],                      tempMax:0.5},
-  bulletify:{icon:'≡',label:'Bulletify',       desc:'Converts prose into clean bullet points',            run:'Bulletify',     ai:true, tones:['concise','academic'],                        tempMax:0.6},
-  slackify: {icon:'#',label:'Slackify',        desc:'Rewrites for Slack — casual, scannable, with emoji', run:'Slackify',      ai:true, tones:['friendly','concise'],                        tempMax:1.2},
-  teamsify: {icon:'⊞',label:'Teamsify',        desc:'Rewrites for Teams — professional with emoji',       run:'Teamsify',      ai:true, tones:['confident','concise'],                       tempMax:0.8},
-  formalise:{icon:'◎',label:'Formalise',       desc:'Elevates writing to formal business register',       run:'Formalise',     ai:true, tones:['confident','academic'],                      tempMax:0.6},
-  simplify: {icon:'◇',label:'Simplify',        desc:'Rewrites in plain, simple English',                  run:'Simplify',      ai:true, tones:['friendly','concise'],                        tempMax:0.8},
+  grammar:  {icon:'✓',label:'Grammar Check',  desc:'Finds grammar, spelling and style issues',             run:'Check Grammar',ai:false,tones:[],                              tempMax:0.3},
+  enhance:  {icon:'✦',label:'Enhance',         desc:'Improves structure, clarity and flow',                 run:'Enhance',       ai:true, tones:['confident','friendly','concise','academic'],tempMax:1.0},
+  paraphrase:{icon:'⇄',label:'Paraphrase',     desc:'Rewrites in fresh words while keeping your meaning',   run:'Paraphrase',    ai:true, tones:['confident','friendly','concise','academic'],tempMax:1.2},
+  elaborate:{icon:'⟿',label:'Elaborate',       desc:'Expands short notes into full professional prose',     run:'Elaborate',     ai:true, tones:['confident','friendly','academic'],            tempMax:1.2},
+  summarise:{icon:'◈',label:'Summarise',        desc:'Condenses text to the essential points',               run:'Summarise',     ai:true, tones:['confident','academic'],                      tempMax:0.5},
+  bulletify:{icon:'≡',label:'Bulletify',        desc:'Converts prose into clean bullet points',              run:'Bulletify',     ai:true, tones:['concise','academic'],                        tempMax:0.6},
+  humanise: {icon:'♡',label:'AI Humanise',      desc:'Makes AI-generated text sound natural and human',     run:'Humanise',      ai:true, tones:['friendly','confident'],                      tempMax:1.2},
+  translate:{icon:'文',label:'Translate',        desc:'Translates your text into another language',          run:'Translate',     ai:true, tones:[],                                            tempMax:0.4},
+  slackify: {icon:'#',label:'Slackify',          desc:'Rewrites for Slack — casual, scannable, with emoji',  run:'Slackify',      ai:true, tones:['friendly','concise'],                        tempMax:1.2},
+  teamsify: {icon:'⊞',label:'Teamsify',          desc:'Rewrites for Teams — professional with emoji',        run:'Teamsify',      ai:true, tones:['confident','concise'],                       tempMax:0.8},
+  formalise:{icon:'◎',label:'Formalise',         desc:'Elevates writing to formal business register',        run:'Formalise',     ai:true, tones:['confident','academic'],                      tempMax:0.6},
+  simplify: {icon:'◇',label:'Simplify',          desc:'Rewrites in plain, simple English',                   run:'Simplify',      ai:true, tones:['friendly','concise'],                        tempMax:0.8},
+  citation: {icon:'❞',label:'Citation',          desc:'Generates a formatted academic citation',             run:'Generate Citation',ai:true,tones:[],                                          tempMax:0.3},
 };
 
 // ── PRODUCTION PROMPTS ────────────────────────────────────────────────────────
 // Pattern: Role → Task → Explicit rules → Edge-case guards → Output format
 const PROMPTS={
+
+paraphrase:
+`You are a professional writer with a deep command of language. Your task is to paraphrase the given text — rewrite it completely in fresh words while preserving every idea, fact, and nuance from the original.
+
+Apply every rule below:
+• The output must express EXACTLY the same meaning as the input — no information added, none removed.
+• Change the sentence structure significantly — do not just swap individual words with synonyms.
+• Vary sentence length and rhythm so the output reads noticeably differently from the original.
+• If the original uses technical terms that have no plain equivalent, keep them exactly.
+• Do NOT use the same opening phrase as the original — start with a different structure entirely.
+• If the input is a single sentence, produce one sentence of comparable length.
+• If the input is multiple paragraphs, paraphrase each paragraph maintaining the same order.
+• Preserve all numbers, dates, proper nouns, and named entities exactly.
+
+Return ONLY the paraphrased text. No preamble.`,
+
+humanise:
+`You are an editor who specialises in making AI-generated text sound like it was written by a thoughtful, experienced human professional.
+
+AI writing patterns you MUST eliminate:
+• Remove all hollow openers: "Certainly!", "Absolutely!", "Great question!", "Of course!", "Sure!", "I'd be happy to…", "Definitely!"
+• Remove meta-commentary: "In this essay I will…", "In conclusion…", "It is important to note that…", "It is worth mentioning…", "As an AI language model…"
+• Remove excessive hedging: "it seems", "it appears", "arguably", "one might say", "it could be argued that", "it is generally accepted"
+• Remove clichés: "in today's fast-paced world", "at the end of the day", "dive deep", "leverage synergies", "game-changer", "paradigm shift", "seamlessly", "robust solution", "streamline processes", "moving forward", "going forward", "touch base"
+• Remove em-dash bullet-style lists — convert to proper prose or real bullet points instead
+• Never start 3 consecutive sentences with the same word
+
+What to do instead:
+• Open with the main point directly — no throat-clearing
+• Use specific, concrete nouns rather than abstract generalisations
+• Mix short punchy sentences with longer, more complex ones
+• Let the content speak — do not announce what you are about to say
+• Preserve all facts, numbers, and technical content exactly
+
+Return ONLY the humanised text. No preamble.`,
+
+translate:
+`You are a professional translator. Translate the text into {LANG}. Produce a natural, idiomatic translation — not a literal word-for-word one. Preserve the register (formal stays formal, casual stays casual). Keep all proper nouns and brand names unless a standard localised equivalent exists. Preserve paragraph structure. Return ONLY the translated text in {LANG}, with no preamble.`,
+
+citation:
+`You are a meticulous academic citation specialist. Generate a correctly formatted {FORMAT} citation for the source described.
+
+Rules:
+• Produce one complete citation in {FORMAT} format.
+• Apply all {FORMAT} rules exactly: capitalisation, punctuation, italics shown as *title*, doi/URL format.
+• If a required field is missing, use the standard {FORMAT} convention: "n.d." for no date, "n.p." for no publisher.
+• Do NOT invent any bibliographic information.
+• After the citation, on a new line starting with "Note:", list any fields that were absent from the input.
+• If given only a URL, format it as a webpage citation.
+• If the input is insufficient, respond: "Insufficient information — please provide: title, author(s), year, and source type (book/journal/website)."
+
+Return the citation, then any notes.`,
 
 enhance:
 `You are a senior copy editor at a world-class publication. Your task is to improve the text while keeping the author's voice, intent, and all factual content fully intact.
@@ -488,13 +627,17 @@ const TONE_DEFS={
 const SAMPLES={
   grammar:   `Their going to the store but they doesnt have no money. Me and him was thinking about it yesterday. The informations is very useful for our works.`,
   enhance:   `The meeting was held by the team. The decision was made to go with the new approach. Things were basically discussed and it was decided that changes need to be made very soon by everyone.`,
+  paraphrase:`The rapid advancement of artificial intelligence is fundamentally transforming how businesses operate, enabling companies to automate repetitive tasks, gain deeper insights from data, and deliver more personalised experiences to their customers.`,
   elaborate: `We need to improve customer onboarding. Current process is slow. Users are confused.`,
   summarise: `Artificial intelligence is transforming industries worldwide. From healthcare to finance, AI automates tasks, analyses data and detects fraud. While this brings huge efficiency gains, concerns about job displacement, data privacy and algorithmic bias are growing. Experts agree responsible AI development needs strong regulation and transparency to ensure it benefits humanity rather than causing harm.`,
   bulletify: `In Q3 we saw strong growth in the enterprise segment with revenue up 34% year on year. Customer retention improved to 92%. The new onboarding flow reduced time-to-value by 40%. However we struggled in the SMB segment where churn increased and support tickets doubled. We need to address pricing and product complexity in that space going into Q4.`,
+  humanise:  `Certainly! Artificial intelligence represents a transformative paradigm shift in today's fast-paced technological landscape. It is important to note that AI leverages robust algorithms to seamlessly streamline processes across various industries. Moving forward, it could be argued that organisations that fail to harness these cutting-edge capabilities may find themselves at a significant competitive disadvantage.`,
+  translate: `The quarterly results exceeded expectations, with revenue growing 28% year-on-year. Customer satisfaction scores reached an all-time high of 94%, driven by improvements in our onboarding process and support team response times.`,
   slackify:  `Dear Team, I would like to inform you that the deployment of the new authentication feature has been completed successfully and is now live in the production environment. All automated test suites have passed and initial performance metrics are within expected parameters. Please do not hesitate to contact me should you encounter any anomalies.`,
   teamsify:  `Hey so basically I just wanted to let u all know that the thing we were working on is done now and stuff is live. everything seems fine i think. lmk if something breaks lol`,
   formalise: `Hey, just wanted to shoot you a quick note — we're super excited about the new project and we can't wait to get started! We're gonna need your help to make it work tho, so let's set up a call soon?`,
   simplify:  `The implementation of the aforementioned strategic initiative necessitates the procurement of substantial financial resources and the acquisition of highly specialised human capital with demonstrable expertise in the relevant technological domains, in order to facilitate the successful execution of the multifaceted operational objectives.`,
+  citation:  `Author: Russell, Stuart and Norvig, Peter. Title: Artificial Intelligence: A Modern Approach. Year: 2020. Publisher: Pearson. Edition: 4th. Type: Book.`,
 };
 
 // State
@@ -566,16 +709,40 @@ function timeAgo(ts){const s=Math.floor((Date.now()-ts)/1000);if(s<60)return'jus
 // Temperature slider handled in helpers section below
 
 // Build tone pills dynamically based on which tones the active tool allows
+// Also shows/hides the translate language picker and citation format picker
 function buildTonePills(toolKey){
   activeTone='';
   const toneGroup=document.getElementById('tone-group');
+  const divTone=document.getElementById('ctrl-div-tone');
   const pillsEl=document.getElementById('tone-pills');
+  const langGroup=document.getElementById('lang-group');
+  const divLang=document.getElementById('ctrl-div-lang');
+  const citeGroup=document.getElementById('cite-group');
+  const divCite=document.getElementById('ctrl-div-cite');
+
   const allowed=TOOLS[toolKey].tones||[];
-  if(!allowed.length){toneGroup.style.display='none';return;}
-  toneGroup.style.display='flex';
-  pillsEl.innerHTML=
-    `<button class="tone-pill active" data-tone="">Default</button>`+
-    allowed.map(k=>`<button class="tone-pill" data-tone="${k}">${TONE_DEFS[k].label}</button>`).join('');
+
+  // Tone pills
+  if(!allowed.length){
+    toneGroup.style.display='none';
+    divTone.style.display='none';
+  } else {
+    toneGroup.style.display='flex';
+    divTone.style.display='block';
+    pillsEl.innerHTML=
+      `<button class="tone-pill active" data-tone="">Default</button>`+
+      allowed.map(k=>`<button class="tone-pill" data-tone="${k}">${TONE_DEFS[k].label}</button>`).join('');
+  }
+
+  // Translate language picker
+  const showLang=toolKey==='translate';
+  langGroup.style.display=showLang?'flex':'none';
+  divLang.style.display=showLang?'block':'none';
+
+  // Citation format picker
+  const showCite=toolKey==='citation';
+  citeGroup.style.display=showCite?'flex':'none';
+  divCite.style.display=showCite?'block':'none';
 }
 
 // Event delegation on tone pills container
@@ -601,9 +768,10 @@ document.getElementById('tools-row').addEventListener('click',e=>{
   document.getElementById('ai-controls').classList.toggle('visible',t.ai);
   buildTonePills(activeTool);
   // Reset slider to midpoint when switching tools
-  tempSlider.value=5;tempVal.textContent='5';
+  tempSlider.value=5;
   const pct=4/9*100;
   tempSlider.style.background=`linear-gradient(to right,var(--indigo) ${pct}%,var(--border) ${pct}%)`;
+  tempVal.textContent=creativityLabel(5);
   updateKeyNotice();
   resultsWrap.classList.remove('visible');
   grammarResult.innerHTML='';aiCard.style.display='none';
@@ -659,12 +827,13 @@ function renderGrammar(matches,text){
     return;
   }
   const stats=`<div class="results-stats">${errs?`<span class="stat-pill errors">${errs} error${errs>1?'s':''}</span>`:''} ${styl?`<span class="stat-pill style-s">${styl} style</span>`:''}<span class="stat-pill score">Score ${score}/100</span></div>`;
+  const disclaimer=`<div style="font-size:11px;color:var(--ink4);font-style:italic;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--surface2);">AI can make mistakes — review suggestions before applying.</div>`;
   const primary=matches.map((m,i)=>({m,i})).filter(({m})=>gtype(m)!=='style');
   const style=matches.map((m,i)=>({m,i})).filter(({m})=>gtype(m)==='style');
   let cards='';
   if(primary.length){cards+=`<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink4);padding:4px 0 7px">Grammar &amp; Spelling (${primary.length})</div>`;cards+=primary.map(({m,i})=>cardHTML(m,i,text)).join('');}
   if(style.length){cards+=`<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink4);padding:11px 0 7px">Style (${style.length})</div>`;cards+=style.map(({m,i})=>cardHTML(m,i,text)).join('');}
-  grammarResult.innerHTML=`<div class="grammar-card"><div class="results-header"><div class="results-title">Grammar Results</div>${stats}</div><div class="issues-list">${cards}</div></div>`;
+  grammarResult.innerHTML=`<div class="grammar-card"><div class="results-header"><div class="results-title">Grammar Results</div>${stats}</div>${disclaimer}<div class="issues-list">${cards}</div></div>`;
   grammarResult.querySelectorAll('.fix-btn').forEach(b=>{b.addEventListener('click',e=>{e.stopPropagation();applyFix(parseInt(b.dataset.idx),b.dataset.val,b.closest('.issue-card'));});});
   grammarResult.querySelectorAll('.issue-body').forEach(b=>{b.addEventListener('click',()=>{const f=b.closest('.issue-card')?.querySelector('.fix-btn');if(f)f.click();});});
 }
@@ -715,9 +884,22 @@ async function runAI(){
   const sliderFraction=(parseInt(tempSlider.value)-1)/9;
   const temp=parseFloat((0.1+sliderFraction*(tool.tempMax-0.1)).toFixed(2));
 
-  // Build prompt: base + optional tone suffix
+  // Build prompt: base + inject dynamic values + optional tone suffix
+  let basePrompt=PROMPTS[activeTool];
+
+  // Inject translate target language
+  if(activeTool==='translate'){
+    const lang=document.getElementById('translate-lang').value||'Spanish';
+    basePrompt=basePrompt.replace(/\{LANG\}/g,lang).replace(/\{TARGET_LANGUAGE\}/g,lang);
+  }
+  // Inject citation format
+  if(activeTool==='citation'){
+    const fmt=document.getElementById('citation-format').value||'APA 7th edition';
+    basePrompt=basePrompt.replace(/\{FORMAT\}/g,fmt).replace(/\{CITATION_FORMAT\}/g,fmt);
+  }
+
   const toneSuffix=activeTone&&TONE_DEFS[activeTone]?TONE_DEFS[activeTone].suffix:'';
-  const prompt=PROMPTS[activeTool]+toneSuffix;
+  const prompt=basePrompt+toneSuffix;
 
   lastInput=text;btnRun.disabled=true;
   grammarResult.innerHTML='';aiCard.style.display='block';
@@ -753,7 +935,7 @@ async function runAI(){
     if(!lastAIText)throw new Error('Empty response from AI — please try again');
     renderAIOut(lastAIText);
     saveHistory(activeTool,text,lastAIText);
-    if(['enhance','formalise','simplify','elaborate'].includes(activeTool))viewToggle.style.display='flex';
+    if(['enhance','formalise','simplify','elaborate','paraphrase','humanise'].includes(activeTool))viewToggle.style.display='flex';
   }catch(e){
     aiBody.innerHTML=`<div style="color:var(--red);padding:16px 20px;font-size:13px;line-height:1.6">
       <strong>⚠ ${esc(e.message)}</strong>
